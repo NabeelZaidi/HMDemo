@@ -4,23 +4,7 @@ from urllib.parse import quote_plus
 import pyodbc
 import urllib
 import os
-
-# conn = 'Driver={ODBC Driver 17 for SQL Server};Server=tcp:demoazuresqlhm.database.windows.net,1433;Database=demoazuresqlhmdb;Uid=Nabeel;Pwd=Hanu@1234567;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
-# quoted = quote_plus(conn)
-# print("********************************")
-# print(quoted)
-# engine=create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
-
-
-# database = 'Driver={ODBC Driver 17 for SQL Server};Server=tcp:demoazuresqlhm.database.windows.net,1433;Database=demoazuresqlhmdb;Uid=Nabeel;Pwd=Hanu@1234567;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
-# raw_string = r"{}".format(database)
-# print(raw_string)
-
-#params = urllib.parse.quote_plus('Driver={ODBC Driver 17 for SQL Server};Server=tcp:demoazuresqlhm.database.windows.net,1433;Database=demoazuresqlhmdb;Uid=Nabeel;Pwd=Hanu@1234567;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;')
-
-#params = urllib.parse.quote_plus(r'Driver={ODBC Driver 17 for SQL Server};Server=tcp:demoazuresqlhm.database.windows.net,1433;Database=demoazuresqlhmdb;Uid=Nabeel;Pwd=Hanu@1234567;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;')
-# print("First Param")
-# print(params)
+#Connecting with Database
 driver = "{ODBC Driver 17 for SQL Server}"
 server = "demoazuresqlhm.database.windows.net"
 database = "demoazuresqlhmdb"
@@ -35,24 +19,12 @@ params = urllib.parse.quote_plus(
     'Encrypt=yes;' +
     'TrustServerCertificate=no;' +
     'Connection Timeout=30;')
-print("Second Param")
-print(params)
+
+
 conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
-print(conn_str)
+
 engine = create_engine(conn_str,echo=True)
 
-# cnxn = pyodbc.connect('Driver={ODBC Driver 13 for SQL Server};Server=tcp:demoazuresqlhm.database.windows.net,1433;Database=demoazuresqlhmdb;Uid=Nabeel;Pwd=Hanu@1234567;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;')
-# cursor = cnxn.cursor()	
-# columns in table x
-# print("Getting columns")
-# for row in cursor.columns(table='x'):
-#     print(row.column_name)
-
-# cursor.execute("SELECT  FROM books") 
-# row = cursor.fetchone() 
-# while row:
-#     print (row) 
-#     row = cursor.fetchone()
 
 @event.listens_for(engine, 'before_cursor_execute')
 def receive_before_cursor_execute(conn, cursor, statement, params, context, executemany):
@@ -60,100 +32,14 @@ def receive_before_cursor_execute(conn, cursor, statement, params, context, exec
     if executemany:
         cursor.fast_executemany = True
 
-# print('connection is ok')
+
 #print(engine_azure.table_names())
 
 
 app = Flask(__name__)
 
 
-
-# @app.route('/most_expensive_book')
-# def most_expensive_book():
-#     query = """SELECT *
-#         FROM books 
-#         WHERE price = (SELECT max(price) FROM books)"""
-#     res = engine.execute(query).fetchall()
-#     result = []
-#     column_names = engine.execute("PRAGMA table_info(books)").fetchall()
-#     for r in res:
-#         item = {}
-#         for i,col in enumerate(column_names):
-#             item[col[1]] = r[i] 
-#         result.append(item)
-        
-#     return jsonify(result)
-
-
-# @app.route('/categories')
-# def categories():
-#     query = """SELECT DISTINCT category FROM books"""
-    
-#     res = engine.execute(query).fetchall()
-#     result = {
-#         "categories": []
-#     }
-#     for r in res:
-#         result["categories"].append(r[0])
-        
-#     return jsonify(result)
-
-
-# @app.route('/categories_count')
-# def categories_count():
-#     query = """SELECT category, count(*) as number
-#                 FROM books
-#                 GROUP BY category"""
-    
-#     res = engine.execute(query).fetchall()
-#     result = {
-        
-#     }
-#     for r in res:
-#         result[r[0]] = r[1]
-        
-#     return jsonify(result)
-
-
-# @app.route('/category/book')
-# def category_book():
-#     category = request.json.get('category','')
-#     query = """SELECT  *
-#                 FROM books
-#                 WHERE category = ? """
-#     res = engine.execute(query,(category,)).fetchall()
-#     result = []
-#     column_names = engine.execute("PRAGMA table_info(books)").fetchall()
-#     for r in res:
-#         item = {}
-#         for i,col in enumerate(column_names):
-#             item[col[1]] = r[i] 
-#         result.append(item)
-        
-#     return jsonify(result)
-
-
-# @app.route('/book/<string:id>')
-# def book(id):
-#     query = """SELECT  *
-#                 FROM books
-#                 WHERE id = ? """
-#     r = engine.execute(query,(id,)).fetchone()
-#     print("I am printing r")
-#     print(r)
-    
-#     column_names = engine.execute("PRAGMA table_info(books)").fetchall()
-#     print("I am printing column names")
-#     print(column_names)
-#     book = {}
-#     for i,col in enumerate(column_names):
-#         book[col[1]] = r[i] 
-        
-#     return jsonify(book)
-
-
-
-
+#Which is the most expensive book? If there are multiple books which share themax() price return all of them
 @app.route('/most_expensive_book')
 def most_expensive_book():
     query = """SELECT id, title, price, stock, category
@@ -173,7 +59,7 @@ def most_expensive_book():
         
     return jsonify(result)
 
-
+#List scraped book categories
 @app.route('/categories')
 def categories():
     query = """SELECT DISTINCT category FROM books"""
@@ -187,7 +73,7 @@ def categories():
         
     return jsonify(result)
 
-
+#How many books have been scraped per category?
 @app.route('/categories_count')
 def categories_count():
     query = """SELECT category, count(*) as number
@@ -203,7 +89,7 @@ def categories_count():
         
     return jsonify(result)
 
-
+#List all of the books for a category
 @app.route('/category/book')
 def category_book():
     category = request.json.get('category','')
@@ -223,7 +109,7 @@ def category_book():
         
     return jsonify(result)
 
-
+#Return a single book by ID (you can create your own ID or take it from the scraped data)
 @app.route('/book/<string:id>')
 def book(id):
     query = """SELECT id, title, price, stock, category
