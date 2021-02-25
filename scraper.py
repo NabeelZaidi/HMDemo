@@ -8,17 +8,26 @@ import urllib
 import re
 
 
-# conn = 'Driver={ODBC Driver 17 for SQL Server};Server=tcp:demoazuresqlhm.database.windows.net,1433;Database=demoazuresqlhmdb;Uid=Nabeel;Pwd=Hanu@1234567;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
-# quoted = quote_plus(conn)
-# engine=create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
-
-
-
-
-params = urllib.parse.quote_plus(r'Driver={ODBC Driver 17 for SQL Server};Server=tcp:demoazuresqlhm.database.windows.net,1433;Database=demoazuresqlhmdb;Uid=Nabeel;Pwd=Hanu@1234567;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;')
+driver = "{ODBC Driver 17 for SQL Server}"
+server = "demoazuresqlhm.database.windows.net"
+database = "demoazuresqlhmdb"
+username = "Nabeel"
+password = os.environ['DatabaseConnectionStringPassword']
+params = urllib.parse.quote_plus(
+    'Driver=%s;' % driver +
+    'Server=tcp:%s,1433;' % server +
+    'Database=%s;' % database +
+    'Uid=%s;' % username +
+    'Pwd=%s;' % password +
+    'Encrypt=yes;' +
+    'TrustServerCertificate=no;' +
+    'Connection Timeout=30;')
+print("Second Param")
+print(params)
 conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
 print(conn_str)
 engine = create_engine(conn_str,echo=True)
+
 
 @event.listens_for(engine, 'before_cursor_execute')
 def receive_before_cursor_execute(conn, cursor, statement, params, context, executemany):
